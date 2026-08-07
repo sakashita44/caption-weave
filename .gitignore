@@ -1,0 +1,31 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+[Pp]ublish/
+
+# IDE and editor state
+.vs/
+.idea/
+.vscode/*
+!.vscode/settings.json
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test and coverage output
+[Tt]est[Rr]esult*/
+[Cc]overage[Rr]eports/
+coverage.*
+
+# Local application state
+settings.local.json
+secrets.dat
+models/
+logs/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
