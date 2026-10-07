@@ -25,6 +25,9 @@ secrets.dat
 models/
 logs/
 
+# Host-specific tool configuration
+mise.local.toml
+
 # Operating system files
 .DS_Store
 Thumbs.db

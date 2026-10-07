@@ -1,0 +1,77 @@
+# pre-commit フック設定
+# 使い方: bash scripts/setup.sh
+default_stages: [pre-commit]
+
+repos:
+    # シークレット混入の検出
+    - repo: https://github.com/gitleaks/gitleaks
+      rev: v8.30.1
+      hooks:
+          - id: gitleaks
+
+    # コードフォーマッター (Prettier)
+    - repo: https://github.com/pre-commit/mirrors-prettier
+      # mirrors-prettier はアーカイブ済みで v4.0.0-alpha.8 が最終版。
+      # 動作しなくなった時点で local フック (node 実行) へ切り替える
+      rev: v4.0.0-alpha.8
+      hooks:
+          - id: prettier
+            # toml は対象外。prettier はプラグインを対象ファイル側から解決するため、
+            # pre-commit の隔離環境へ入れた prettier-plugin-toml を読み込めない
+            types_or: [markdown, json, yaml]
+            # 最終版の rev は Prettier 4 のアルファ版を使うため、安定版の Prettier 3 を指定する
+            additional_dependencies: ['prettier@3.9.6']
+            args: [--write]
+
+    # Markdownリント
+    - repo: https://github.com/DavidAnson/markdownlint-cli2
+      rev: v0.23.2
+      hooks:
+          - id: markdownlint-cli2
+
+    # 一般的な誤りの検出・修正
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v6.0.0
+      hooks:
+          - id: trailing-whitespace
+            args: [--markdown-linebreak-ext=md]
+          - id: end-of-file-fixer
+          # 一つのファイル内での改行コードの混在だけを検出する。
+          # --fix=lf は working tree を CRLF とする .gitattributes の
+          # Windows 固有スクリプトまで LF へ書き換えるため採らない
+          - id: mixed-line-ending
+            args: [--fix=no]
+          - id: check-merge-conflict
+          - id: check-yaml
+          - id: check-added-large-files
+
+    # .NET の検査
+    # pre-commit の隔離環境ではプロジェクトの SDK と NuGet の依存を解決できないため、
+    # global.json が選ぶ SDK をそのまま使う local フックとして実行する
+    - repo: local
+      hooks:
+          # 空白の整形は .editorconfig とファイル単体で判定できるため、
+          # restore を伴わない --folder で、コミットする C# ファイルだけを整形する
+          - id: dotnet-format-whitespace
+            name: dotnet format whitespace
+            entry: dotnet format whitespace --folder --include
+            language: system
+            types: [c#]
+
+          # ビルドとテストはソリューション全体を見る必要があるため push 時に実行する。
+          # C# 以外の変更 (プロジェクトファイル、global.json など) でも壊れうるため always_run にする
+          - id: dotnet-build
+            name: dotnet build
+            entry: dotnet build CaptionWeave.slnx
+            language: system
+            always_run: true
+            pass_filenames: false
+            stages: [pre-push]
+
+          - id: dotnet-test
+            name: dotnet test
+            entry: dotnet test CaptionWeave.slnx
+            language: system
+            always_run: true
+            pass_filenames: false
+            stages: [pre-push]

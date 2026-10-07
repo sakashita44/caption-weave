@@ -1,0 +1,3 @@
+[settings]
+# .NET SDK は global.json の sdk.version が指定するバージョンを導入する
+idiomatic_version_file_enable_tools = ["dotnet"]
